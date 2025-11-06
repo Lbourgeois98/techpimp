@@ -16,22 +16,39 @@ function setupFormHandler() {
   const forms = document.querySelectorAll("form");
 
   forms.forEach(form => {
-    const nameInput = form.querySelector("input[name='name'], input[name='user_name'], input[placeholder*='Name' i]");
-    const emailInput = form.querySelector("input[name='email'], input[name='user_email'], input[type='email']");
-    const messageInput = form.querySelector("textarea[name='message'], textarea[name='user_message'], textarea");
+    if (form.dataset.emailjsSetup) return;
 
-    if (nameInput && emailInput && messageInput && !form.dataset.emailjsSetup) {
+    const inputs = form.querySelectorAll("input, textarea, select");
+    const nameInput = form.querySelector("input[placeholder*='Name' i], input[type='text']:first-of-type");
+    const emailInput = form.querySelector("input[type='email']");
+    const packageSelect = form.querySelector("select");
+    const messageInput = form.querySelector("textarea");
+
+    if ((nameInput || emailInput) && messageInput && inputs.length >= 3) {
       form.dataset.emailjsSetup = "true";
-      form.removeAttribute("action");
 
-      form.addEventListener("submit", (e) => {
+      const originalSubmit = form.onsubmit;
+
+      form.onsubmit = function(e) {
         e.preventDefault();
+        e.stopPropagation();
+
+        const name = nameInput?.value || "Not provided";
+        const email = emailInput?.value || "Not provided";
+        const packageVal = packageSelect?.value || "Not specified";
+        const message = messageInput?.value || "";
+
+        if (!email || !message) {
+          showPopup("Please fill in all required fields.", "error");
+          return false;
+        }
 
         const templateData = {
-          user_name: nameInput.value,
-          user_email: emailInput.value,
-          user_message: messageInput.value,
-          to_email: "your-email@example.com"
+          user_name: name,
+          user_email: email,
+          user_message: message,
+          package: packageVal,
+          to_email: "support@techpimp.site"
         };
 
         emailjs.send("service_jtdigei", "template_4xvvhf8", templateData)
@@ -43,15 +60,21 @@ function setupFormHandler() {
             console.error("EmailJS Error:", err);
             showPopup("Failed to send message. Please try again.", "error");
           });
-      });
+
+        return false;
+      };
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.onsubmit(e);
+      }, true);
     }
   });
 }
 
+setTimeout(setupFormHandler, 500);
 document.addEventListener("DOMContentLoaded", setupFormHandler);
 
-const observer = new MutationObserver(() => {
-  setTimeout(setupFormHandler, 100);
-});
-
+const observer = new MutationObserver(setupFormHandler);
 observer.observe(document.body, { childList: true, subtree: true });
