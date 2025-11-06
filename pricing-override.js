@@ -1,32 +1,27 @@
 (function() {
-  // Add CSS to hide pricing until ready
-  const style = document.createElement('style');
-  style.textContent = `
-    .grid.lg\\:grid-cols-3 {
-      opacity: 0;
-      transition: opacity 0.3s ease-in;
-    }
-    .grid.lg\\:grid-cols-3.pricing-ready {
-      opacity: 1;
-    }
-  `;
-  document.head.appendChild(style);
+  let attempts = 0;
+  const maxAttempts = 50;
 
   function updatePricingSection() {
+    attempts++;
+
     // Only run on pricing page
     if (!window.location.pathname.includes('pricing')) {
       return;
     }
 
     if (!window.PRICING_CONFIG) {
-      console.warn('Pricing config not found');
-      setTimeout(updatePricingSection, 50);
+      if (attempts < maxAttempts) {
+        setTimeout(updatePricingSection, 100);
+      }
       return;
     }
 
     const pricingGrid = document.querySelector('.grid.lg\\:grid-cols-3');
     if (!pricingGrid) {
-      setTimeout(updatePricingSection, 50);
+      if (attempts < maxAttempts) {
+        setTimeout(updatePricingSection, 100);
+      }
       return;
     }
 
@@ -122,7 +117,7 @@
     console.log('✅ Pricing section updated from config');
   }
 
-  // Run on page load and navigation
+  // Run on page load
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', updatePricingSection);
   } else {
@@ -135,7 +130,12 @@
     if (window.location.pathname !== lastPath) {
       lastPath = window.location.pathname;
       if (window.location.pathname.includes('pricing')) {
-        setTimeout(updatePricingSection, 100);
+        const grid = document.querySelector('.grid.lg\\:grid-cols-3');
+        if (grid) {
+          grid.dataset.updated = 'false';
+        }
+        attempts = 0;
+        setTimeout(updatePricingSection, 200);
       }
     }
   }, 500);
