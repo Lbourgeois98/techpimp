@@ -67,14 +67,30 @@
 
       console.log('🚀 SENDING EMAIL NOW');
 
-      // Send directly with EmailJS
+      // Get current time
+      const now = new Date();
+      const time = now.toLocaleString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric', 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      });
+
+      // Add package info to message if selected
+      let fullMessage = message;
+      if (pkg && pkg !== 'Select Your Package') {
+        fullMessage = `Package Selected: ${pkg}\n\n${message}`;
+      }
+
+      // Send with YOUR template variables
       if (typeof emailjs !== 'undefined') {
         emailjs.send("service_jtdigei", "template_4xvvhf8", {
-          user_name: name,
-          user_email: email,
-          package: pkg,
-          user_message: message,
-          to_email: "support@techpimp.site"
+          name: name,
+          email: email,
+          time: time,
+          message: fullMessage
         })
         .then(() => {
           alert('✅ Message sent successfully!');
@@ -82,7 +98,7 @@
           
           // Show success popup
           const popup = document.createElement('div');
-          popup.style.cssText = 'position:fixed;bottom:30px;right:30px;background:#22c55e;color:white;padding:20px;border-radius:8px;z-index:9999;font-weight:bold;';
+          popup.style.cssText = 'position:fixed;bottom:30px;right:30px;background:#22c55e;color:white;padding:20px;border-radius:8px;z-index:9999;font-weight:bold;box-shadow:0 4px 6px rgba(0,0,0,0.3);';
           popup.textContent = '✅ Message sent successfully!';
           document.body.appendChild(popup);
           setTimeout(() => popup.remove(), 3000);
