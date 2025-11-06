@@ -1,153 +1,154 @@
 /**
- * AGGRESSIVE CONTACT FORM FIX
+ * NUCLEAR FIX - BYPASSES EVERYTHING
  */
 
 (function() {
-  console.log('🚀 STARTING FORM FIX');
+  console.log('🔥 NUCLEAR FORM FIX LOADED');
 
-  function fixContactForm() {
+  setInterval(function() {
+    if (window.location.pathname !== '/contact') return;
+
     const form = document.querySelector('form');
-    if (!form) {
-      setTimeout(fixContactForm, 100);
+    if (!form || form.dataset.nuked) return;
+
+    console.log('💣 NUKING FORM');
+    form.dataset.nuked = 'true';
+
+    // Get all form elements
+    const inputs = form.querySelectorAll('input, select, textarea, button');
+    
+    // Find the submit button
+    const submitBtn = Array.from(inputs).find(el => 
+      el.tagName === 'BUTTON' && 
+      (el.textContent.includes('Start') || el.textContent.includes('Project') || el.type === 'submit')
+    );
+
+    if (!submitBtn) {
+      console.log('❌ NO SUBMIT BUTTON FOUND');
       return;
     }
 
-    if (form.dataset.fixed) return;
-    form.dataset.fixed = 'true';
+    console.log('✅ SUBMIT BUTTON FOUND');
 
-    console.log('✅ FORM FOUND');
+    // Remove ALL event listeners by replacing the button
+    const newBtn = submitBtn.cloneNode(true);
+    submitBtn.parentNode.replaceChild(newBtn, submitBtn);
 
-    const handleSubmit = function(e) {
+    // Add our handler
+    newBtn.onclick = function(e) {
       e.preventDefault();
       e.stopPropagation();
-      e.stopImmediatePropagation();
-      
-      console.log('🔥 FORM SUBMIT INTERCEPTED');
 
-      // Get ALL inputs
-      const allInputs = Array.from(form.querySelectorAll('input'));
-      const allSelects = Array.from(form.querySelectorAll('select'));
-      const allTextareas = Array.from(form.querySelectorAll('textarea'));
+      console.log('💥 BUTTON CLICKED');
 
-      console.log('Found inputs:', allInputs.length);
-      console.log('Found selects:', allSelects.length);
-      console.log('Found textareas:', allTextareas.length);
+      // Get values directly from DOM
+      const formInputs = form.querySelectorAll('input');
+      const formSelects = form.querySelectorAll('select');
+      const formTextareas = form.querySelectorAll('textarea');
 
-      // Get values by position
-      let nameValue = '';
-      let emailValue = '';
-      let packageValue = '';
-      let messageValue = '';
+      let name = '';
+      let email = '';
+      let pkg = '';
+      let message = '';
 
-      // Get name (first text input)
-      for (let input of allInputs) {
-        if (input.type === 'text' && input.value.trim()) {
-          nameValue = input.value.trim();
-          console.log('✅ Found name:', nameValue);
-          break;
-        }
-      }
-
-      // Get email
-      for (let input of allInputs) {
-        if (input.type === 'email' && input.value.trim()) {
-          emailValue = input.value.trim();
-          console.log('✅ Found email:', emailValue);
-          break;
-        }
-      }
-
-      // Get package (first select)
-      if (allSelects.length > 0 && allSelects[0].value) {
-        packageValue = allSelects[0].value;
-        console.log('✅ Found package:', packageValue);
-      }
-
-      // Get message (first textarea)
-      if (allTextareas.length > 0 && allTextareas[0].value.trim()) {
-        messageValue = allTextareas[0].value.trim();
-        console.log('✅ Found message:', messageValue);
-      }
-
-      // Log everything we found
-      console.log('📋 ALL VALUES:', {
-        name: nameValue,
-        email: emailValue,
-        package: packageValue,
-        message: messageValue
+      // Just grab values in order
+      formInputs.forEach((input, i) => {
+        const val = input.value.trim();
+        console.log(`Input ${i}: type=${input.type}, value="${val}"`);
+        if (input.type === 'text' && !name) name = val;
+        if (input.type === 'email') email = val;
       });
 
-      // Simple validation
-      if (!nameValue || !emailValue || !messageValue) {
-        console.log('❌ VALIDATION FAILED');
-        if (!nameValue) console.log('Missing: name');
-        if (!emailValue) console.log('Missing: email');
-        if (!messageValue) console.log('Missing: message');
-        alert('Please fill in all fields');
-        return false;
+      formSelects.forEach((select, i) => {
+        const val = select.value;
+        console.log(`Select ${i}: value="${val}"`);
+        if (!pkg) pkg = val;
+      });
+
+      formTextareas.forEach((textarea, i) => {
+        const val = textarea.value.trim();
+        console.log(`Textarea ${i}: value="${val}"`);
+        if (!message) message = val;
+      });
+
+      console.log('📦 COLLECTED DATA:', { name, email, pkg, message });
+
+      // Check if we got the data
+      if (!name || !email || !message) {
+        console.log('❌ MISSING DATA - TRYING ALTERNATIVE METHOD');
+        
+        // Alternative: just get ALL values
+        const allValues = Array.from(formInputs).map(i => i.value.trim()).filter(v => v);
+        const textareaVal = formTextareas[0]?.value.trim();
+        const selectVal = formSelects[0]?.value;
+        
+        console.log('All input values:', allValues);
+        console.log('Textarea value:', textareaVal);
+        console.log('Select value:', selectVal);
+        
+        // Assign by position if we have them
+        if (allValues.length >= 2 && textareaVal) {
+          name = allValues[0];
+          email = allValues[1];
+          pkg = selectVal || 'Not specified';
+          message = textareaVal;
+          console.log('✅ GOT DATA VIA ALTERNATIVE METHOD');
+        } else {
+          alert('Please fill in: Name, Email, and Message');
+          return;
+        }
       }
 
-      console.log('✅ VALIDATION PASSED - SENDING EMAIL');
+      console.log('🚀 SENDING EMAIL NOW');
 
-      const formData = {
-        name: nameValue,
-        email: emailValue,
-        package: packageValue || 'Not specified',
-        message: messageValue
+      const data = {
+        name: name,
+        email: email,
+        package: pkg || 'Not specified',
+        message: message
       };
 
-      // Send via EmailJS
+      // Send immediately
       if (window.sendEmailViaEmailJS) {
-        window.sendEmailViaEmailJS(formData)
+        window.sendEmailViaEmailJS(data)
           .then(() => {
-            console.log('✅ EMAIL SENT!');
-            alert('Message sent successfully!');
-            // Clear form
-            allInputs.forEach(input => input.value = '');
-            allSelects.forEach(select => select.selectedIndex = 0);
-            allTextareas.forEach(textarea => textarea.value = '');
+            alert('✅ Message sent successfully!');
+            console.log('✅ EMAIL SENT');
+            // Clear inputs
+            formInputs.forEach(i => i.value = '');
+            formTextareas.forEach(t => t.value = '');
+            if (formSelects[0]) formSelects[0].selectedIndex = 0;
           })
-          .catch((err) => {
-            console.error('❌ SEND FAILED:', err);
-            alert('Failed to send. Please try again.');
+          .catch(err => {
+            alert('❌ Failed to send. Check console.');
+            console.error('SEND ERROR:', err);
           });
       } else {
-        console.error('❌ EMAILJS NOT READY');
-        alert('Email system not ready. Please wait a moment and try again.');
+        // EmailJS not ready, send directly
+        console.log('⚠️ EmailJS not ready, importing now...');
+        import('https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js')
+          .then(emailjs => {
+            emailjs.default.init('b4FULBMJBZFW3n5D6');
+            return emailjs.default.send('service_jtdigei', 'template_4xvvhf8', {
+              user_name: data.name,
+              user_email: data.email,
+              package: data.package,
+              user_message: data.message,
+              to_email: 'support@techpimp.site'
+            });
+          })
+          .then(() => {
+            alert('✅ Message sent successfully!');
+            formInputs.forEach(i => i.value = '');
+            formTextareas.forEach(t => t.value = '');
+          })
+          .catch(err => {
+            alert('❌ Failed to send: ' + err.message);
+            console.error(err);
+          });
       }
-
-      return false;
     };
 
-    // Clone form to remove all React handlers
-    const newForm = form.cloneNode(true);
-    form.parentNode.replaceChild(newForm, form);
-
-    // Add handlers to EVERYTHING
-    newForm.addEventListener('submit', handleSubmit, true);
-    
-    const buttons = newForm.querySelectorAll('button');
-    buttons.forEach(btn => {
-      btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        handleSubmit(e);
-      }, true);
-    });
-
-    console.log('✅ FORM INTERCEPTED - READY TO GO');
-  }
-
-  // Run multiple times to catch the form
-  setTimeout(fixContactForm, 100);
-  setTimeout(fixContactForm, 500);
-  setTimeout(fixContactForm, 1000);
-  setTimeout(fixContactForm, 2000);
-
-  // Watch for route changes
-  setInterval(() => {
-    if (window.location.pathname === '/contact') {
-      fixContactForm();
-    }
+    console.log('✅ NUCLEAR FIX ARMED');
   }, 500);
 })();
