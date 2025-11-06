@@ -12,6 +12,30 @@ function showPopup(message, type) {
   setTimeout(() => (popup.className = "popup"), 3000);
 }
 
+// Expose global function for React to use
+window.sendEmailViaEmailJS = function(formData) {
+  return new Promise((resolve, reject) => {
+    const templateData = {
+      user_name: formData.name || "Not provided",
+      user_email: formData.email || "Not provided",
+      user_message: formData.message || "",
+      package: formData.package || "Not specified",
+      to_email: "support@techpimp.site"
+    };
+
+    emailjs.send("service_jtdigei", "template_4xvvhf8", templateData)
+      .then((response) => {
+        showPopup("Message sent successfully!", "success");
+        resolve(response);
+      })
+      .catch((err) => {
+        console.error("EmailJS Error:", err);
+        showPopup("Failed to send message. Please try again.", "error");
+        reject(err);
+      });
+  });
+};
+
 function setupFormHandler() {
   const forms = document.querySelectorAll("form");
 
@@ -27,38 +51,28 @@ function setupFormHandler() {
     if ((nameInput || emailInput) && messageInput && inputs.length >= 3) {
       form.dataset.emailjsSetup = "true";
 
-      const originalSubmit = form.onsubmit;
-
       form.onsubmit = function(e) {
         e.preventDefault();
         e.stopPropagation();
 
-        const name = nameInput?.value || "Not provided";
-        const email = emailInput?.value || "Not provided";
-        const packageVal = packageSelect?.value || "Not specified";
-        const message = messageInput?.value || "";
+        const formData = {
+          name: nameInput?.value || "Not provided",
+          email: emailInput?.value || "Not provided",
+          package: packageSelect?.value || "Not specified",
+          message: messageInput?.value || ""
+        };
 
-        if (!email || !message) {
+        if (!formData.email || !formData.message) {
           showPopup("Please fill in all required fields.", "error");
           return false;
         }
 
-        const templateData = {
-          user_name: name,
-          user_email: email,
-          user_message: message,
-          package: packageVal,
-          to_email: "support@techpimp.site"
-        };
-
-        emailjs.send("service_jtdigei", "template_4xvvhf8", templateData)
+        window.sendEmailViaEmailJS(formData)
           .then(() => {
-            showPopup("Message sent successfully!", "success");
             form.reset();
           })
-          .catch(err => {
-            console.error("EmailJS Error:", err);
-            showPopup("Failed to send message. Please try again.", "error");
+          .catch(() => {
+            // Error already handled by showPopup
           });
 
         return false;
