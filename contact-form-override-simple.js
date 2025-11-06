@@ -93,10 +93,9 @@
           message: fullMessage
         })
         .then(() => {
-          alert('✅ Message sent successfully!');
           console.log('✅ EMAIL SENT!');
           
-          // Show success popup
+          // Show success popup at bottom only
           const popup = document.createElement('div');
           popup.style.cssText = 'position:fixed;bottom:30px;right:30px;background:#22c55e;color:white;padding:20px;border-radius:8px;z-index:9999;font-weight:bold;box-shadow:0 4px 6px rgba(0,0,0,0.3);';
           popup.textContent = '✅ Message sent successfully!';
@@ -109,11 +108,21 @@
           if (formSelects[0]) formSelects[0].selectedIndex = 0;
         })
         .catch(err => {
-          alert('❌ Failed to send. Error: ' + err.text);
+          // Show error popup at bottom
+          const popup = document.createElement('div');
+          popup.style.cssText = 'position:fixed;bottom:30px;right:30px;background:#ef4444;color:white;padding:20px;border-radius:8px;z-index:9999;font-weight:bold;box-shadow:0 4px 6px rgba(0,0,0,0.3);';
+          popup.textContent = '❌ Failed to send. Please try again.';
+          document.body.appendChild(popup);
+          setTimeout(() => popup.remove(), 3000);
           console.error('SEND ERROR:', err);
         });
       } else {
-        alert('⏳ Email system still loading. Please wait 2 seconds and try again.');
+        // Show loading message at bottom
+        const popup = document.createElement('div');
+        popup.style.cssText = 'position:fixed;bottom:30px;right:30px;background:#f59e0b;color:white;padding:20px;border-radius:8px;z-index:9999;font-weight:bold;box-shadow:0 4px 6px rgba(0,0,0,0.3);';
+        popup.textContent = '⏳ Email system loading. Please wait 2 seconds and try again.';
+        document.body.appendChild(popup);
+        setTimeout(() => popup.remove(), 3000);
         console.error('EmailJS not loaded yet');
       }
     };
