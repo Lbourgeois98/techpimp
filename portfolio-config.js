@@ -11,7 +11,7 @@ window.PORTFOLIO_CONFIG = [
   },
   {
     url: "https://smugglersgaming.netlify.app/",
-    title: "Sweeps Hub",
+    title: "Smugglers Gaming",
     description: "Online Casino with Game Links, Rules, and Payment Methods"
   },
   {
