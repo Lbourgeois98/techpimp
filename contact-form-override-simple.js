@@ -19,11 +19,11 @@
     }
 
     // Check if this is the contact form
-    const hasNameField = form.querySelector('input[placeholder*="Name"]');
-    const hasEmailField = form.querySelector('input[type="email"]');
-    const hasMessageField = form.querySelector('textarea');
+    const inputs = form.querySelectorAll('input');
+    const textarea = form.querySelector('textarea');
+    const select = form.querySelector('select');
 
-    if (!hasNameField || !hasEmailField || !hasMessageField) {
+    if (inputs.length === 0 || !textarea || !select) {
       setTimeout(fixContactForm, 200);
       return;
     }
@@ -44,28 +44,60 @@
       
       console.log('📧 Form submitted, using EmailJS...');
 
-      // Get form values
+      // Get form values - more flexible selectors
+      const nameInput = form.querySelector('input[name="name"]') || 
+                        form.querySelector('input[placeholder*="Name"]') ||
+                        form.querySelector('input[type="text"]');
+      
+      const emailInput = form.querySelector('input[name="email"]') || 
+                         form.querySelector('input[type="email"]');
+      
+      const packageSelect = form.querySelector('select[name="package"]') || 
+                           form.querySelector('select');
+      
+      const messageTextarea = form.querySelector('textarea[name="message"]') || 
+                             form.querySelector('textarea');
+
       const formData = {
-        name: form.querySelector('input[placeholder*="Name"]')?.value || '',
-        email: form.querySelector('input[type="email"]')?.value || '',
-        package: form.querySelector('select')?.value || 'Not specified',
-        message: form.querySelector('textarea')?.value || ''
+        name: nameInput?.value?.trim() || '',
+        email: emailInput?.value?.trim() || '',
+        package: packageSelect?.value?.trim() || 'Not specified',
+        message: messageTextarea?.value?.trim() || ''
       };
 
+      console.log('📋 Form data collected:', formData);
+
       // Validate
-      if (!formData.name || !formData.email || !formData.message) {
-        alert('Please fill in all required fields.');
+      if (!formData.name) {
+        alert('Please enter your name.');
+        console.log('❌ Validation failed: No name');
+        return false;
+      }
+      
+      if (!formData.email) {
+        alert('Please enter your email.');
+        console.log('❌ Validation failed: No email');
+        return false;
+      }
+      
+      if (!formData.message) {
+        alert('Please enter a message.');
+        console.log('❌ Validation failed: No message');
         return false;
       }
 
-      console.log('📋 Form data:', formData);
+      console.log('✅ Validation passed, sending email...');
 
       // Send via EmailJS
       if (typeof window.sendEmailViaEmailJS === 'function') {
         window.sendEmailViaEmailJS(formData)
           .then(() => {
             console.log('✅ Email sent successfully!');
-            form.reset();
+            // Reset form
+            if (nameInput) nameInput.value = '';
+            if (emailInput) emailInput.value = '';
+            if (packageSelect) packageSelect.value = '';
+            if (messageTextarea) messageTextarea.value = '';
           })
           .catch((error) => {
             console.error('❌ Email send failed:', error);
@@ -74,7 +106,13 @@
         console.error('❌ EmailJS not initialized. Waiting and retrying...');
         setTimeout(() => {
           if (typeof window.sendEmailViaEmailJS === 'function') {
-            window.sendEmailViaEmailJS(formData);
+            window.sendEmailViaEmailJS(formData)
+              .then(() => {
+                if (nameInput) nameInput.value = '';
+                if (emailInput) emailInput.value = '';
+                if (packageSelect) packageSelect.value = '';
+                if (messageTextarea) messageTextarea.value = '';
+              });
           }
         }, 1000);
       }
@@ -90,7 +128,8 @@
     newForm.addEventListener('submit', handleSubmit, true);
     
     // Also override the submit button click
-    const submitButton = newForm.querySelector('button[type="submit"]');
+    const submitButton = newForm.querySelector('button[type="submit"]') || 
+                        newForm.querySelector('button');
     if (submitButton) {
       submitButton.addEventListener('click', function(e) {
         e.preventDefault();
@@ -99,6 +138,12 @@
     }
 
     console.log('✅ Form intercepted successfully');
+    console.log('📋 Form elements found:', {
+      inputs: newForm.querySelectorAll('input').length,
+      select: !!newForm.querySelector('select'),
+      textarea: !!newForm.querySelector('textarea'),
+      button: !!submitButton
+    });
   }
 
   // Initial check
