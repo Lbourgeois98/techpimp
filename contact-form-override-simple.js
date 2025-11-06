@@ -1,9 +1,18 @@
 /**
- * WORKING FIX
+ * SELF-CONTAINED FIX WITH EMAILJS BUILT IN
  */
 
 (function() {
-  console.log('🔥 FORM FIX LOADED');
+  console.log('🔥 LOADING EMAILJS DIRECTLY');
+
+  // Load EmailJS library
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
+  script.onload = function() {
+    emailjs.init("b4FULBMJBZFW3n5D6");
+    console.log('✅ EMAILJS LOADED AND READY');
+  };
+  document.head.appendChild(script);
 
   setInterval(function() {
     if (window.location.pathname !== '/contact') return;
@@ -56,42 +65,43 @@
         return;
       }
 
-      console.log('🚀 SENDING EMAIL');
+      console.log('🚀 SENDING EMAIL NOW');
 
-      const data = {
-        name: name,
-        email: email,
-        package: pkg || 'Not specified',
-        message: message
-      };
-
-      // Wait for EmailJS to be ready
-      function attemptSend(retries = 0) {
-        if (window.sendEmailViaEmailJS) {
-          window.sendEmailViaEmailJS(data)
-            .then(() => {
-              alert('✅ Message sent successfully!');
-              console.log('✅ EMAIL SENT');
-              formInputs.forEach(i => i.value = '');
-              formTextareas.forEach(t => t.value = '');
-              if (formSelects[0]) formSelects[0].selectedIndex = 0;
-            })
-            .catch(err => {
-              alert('❌ Failed to send. Please try again.');
-              console.error('SEND ERROR:', err);
-            });
-        } else if (retries < 10) {
-          console.log('⏳ Waiting for EmailJS... retry', retries);
-          setTimeout(() => attemptSend(retries + 1), 500);
-        } else {
-          alert('❌ Email system not ready. Please refresh and try again.');
-          console.error('EmailJS never loaded');
-        }
+      // Send directly with EmailJS
+      if (typeof emailjs !== 'undefined') {
+        emailjs.send("service_jtdigei", "template_4xvvhf8", {
+          user_name: name,
+          user_email: email,
+          package: pkg,
+          user_message: message,
+          to_email: "support@techpimp.site"
+        })
+        .then(() => {
+          alert('✅ Message sent successfully!');
+          console.log('✅ EMAIL SENT!');
+          
+          // Show success popup
+          const popup = document.createElement('div');
+          popup.style.cssText = 'position:fixed;bottom:30px;right:30px;background:#22c55e;color:white;padding:20px;border-radius:8px;z-index:9999;font-weight:bold;';
+          popup.textContent = '✅ Message sent successfully!';
+          document.body.appendChild(popup);
+          setTimeout(() => popup.remove(), 3000);
+          
+          // Clear form
+          formInputs.forEach(i => i.value = '');
+          formTextareas.forEach(t => t.value = '');
+          if (formSelects[0]) formSelects[0].selectedIndex = 0;
+        })
+        .catch(err => {
+          alert('❌ Failed to send. Error: ' + err.text);
+          console.error('SEND ERROR:', err);
+        });
+      } else {
+        alert('⏳ Email system still loading. Please wait 2 seconds and try again.');
+        console.error('EmailJS not loaded yet');
       }
-
-      attemptSend();
     };
 
-    console.log('✅ FIX ARMED');
+    console.log('✅ FIX ARMED AND READY');
   }, 500);
 })();
